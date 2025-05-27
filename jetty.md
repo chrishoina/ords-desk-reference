@@ -6,7 +6,7 @@
 
 ### 1.1.1 Introducting Jetty X-Powered-By, Version, and Date Headers
 
-Here is an example of a Jetty Context XML file that adds additional headers to your HTTP responses.
+Here is an example of a Jetty Context `XML` file that adds additional headers to your HTTP responses. This example is designed to show how you might structure a Jetty Content `XML` file to add additional functionality to ORDS' embedded Jetty server.
 
 ```xml
 <?xml version="1.0"?>
