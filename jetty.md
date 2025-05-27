@@ -6,10 +6,7 @@
 
 ### 1.1.1 Introducting Jetty X-Powered-By, Version, and Date Headers
 
-Here is an example Jetty Context XML file that introduces a few additional headers into each of your HTTP responses. 
-
-> [!NOTE]
-> I'm using ORDS in standalone mode, so if you are using Apache Tomcat or Weblogic, this will not work.
+Here is an example of a Jetty Context XML file that adds additional headers to your HTTP responses.
 
 ```xml
 <?xml version="1.0"?>
@@ -27,13 +24,18 @@ Here is an example Jetty Context XML file that introduces a few additional heade
 </Configure>
 ```
 
-First, create a Jetty `XML` file. Next, place it in your `/etc`[^1.1.1a] folder, prior to starting ORDS back up. In this example I've named the file `jetty_headers.xml`. I have installed and deployed ORDS locally (i.e., `localhost`), with my configuration folder named `configuration`. With the full path being:
+> [!NOTE]
+> I'm using ORDS in standalone mode, so if you are using Apache Tomcat or Weblogic, this will not work.
+
+To test this out, first, create a Jetty `XML` file and populate the body with the contents in the above example. In this example, I've named the file `jetty_headers.xml`.
+
+Next, place the file in your `/etc`[^1.1.1a] folder. Once there, start ORDS back up (i.e., `ords serve`). I have installed and deployed ORDS locally (i.e., `localhost`), with my configuration folder named `configuration`. With the full path being:
 
 ```sh
 /Users/choina/ords/configuration/global/standalone/etc/jetty_headers.xml
 ```
 
-And here is a view of how my ORDS configuration folder is structured:
+For reference, here is a view of how my ORDS configuration folder is structured:
 
 ```sh
 .
@@ -52,23 +54,25 @@ And here is a view of how my ORDS configuration folder is structured:
         └── self-signed.pem
 ```
 
-[^1.1.1a]: You need to create this `/etc` folder manually. As of ORDS 25.1 this folder isn't something that already exists. You might have a path similar to the one I shared above.
+[^1.1.1a]: You need to create this `/etc` folder manually. As of ORDS 25.1, this folder isn't something that already exists. You might have a path similar to the one I shared above.
 
+With everything in place, I can issue a request to one of my ORDS endpoints. In this case, I've created a simple `GET` Handler that queries the `EMP` table. The actual response isn't the focus, but rather the response headers.
 
-
-I can issue an HTTP `GET` request to one of my endpoints, like this one (a cURL command in this example):
+I used cURL for this:
 
 ```sh
 curl http://localhost:8080/ords/hr/employees/
 ```
 
-I see three new response headers displayed in a console output:
+In the response, I now see three new response headers displayed in a console output[^1.1.1b]:
 
 - `Server: Jetty(12.0.18)`
 - `X-Powered-By: Jetty(12.0.18)`
-- `Date: Sat, 24 2025 11:46:12 GMT`[^1.1.1b]
+- `Date: Sat, 24 2025 11:46:12 GMT`
 
-[^1.1.1b]: As of ORDS 25.1, and possibly all versions, ORDS will always show a request date
+[^1.1.1b]: You may notice the Date header is returned in GMT/Zulu. This will always be the case with ORDS. ORDS will always return data and times in GMT/Zulu format. For reference, if you independently alter the `user.timezone` JVM Option, this would only change how ORDS interprets dates and times where no timezone is attached. The Oracle Database `Date` and `Timestamp` datatypes are two examples where the timezone is not indicated.
+
+Below is a console log printout showing the full details of the request and response (excluding the response body):
 
 ```sh
 * Preparing request to http://localhost:8080/ords/hr/employees/
@@ -104,3 +108,13 @@ I see three new response headers displayed in a console output:
 * Received 7 B chunk
 * Connection #10 to host localhost left intact
 ```
+
+Arguably, the `Server`, `X-Powered-By`, and `Date` response headers could be considered functionally useless. However, for logging purposes, especially when it comes to huge applications or microservices more data can aid in quicker root-cause analyses.
+
+In any case, pretty neat how you can easily add enhanced functionality to ORDS standalone with a few lines of `XML`.
+
+#### 1.1.1 References
+
+- [Deploying Jetty Context XML Files](https://jetty.org/docs/jetty/12/operations-guide/deploy/index.html)
+- [About the HttpConfiguration Class](https://javadoc.jetty.org/jetty-12/org/eclipse/jetty/server/HttpConfiguration.html) (used in this example)
+- ORDS Installation and Configuration Guide: [Using Jetty XML Configuration Files](https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/25.1/ordig/miscellaneous-configuration-options-of-ORDS.html#GUID-A3798C5A-C6C6-40A2-826F-CE1CF0B8DDE2)
